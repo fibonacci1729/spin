@@ -40,6 +40,7 @@ cargo-target-dep = { git = "https://github.com/fermyon/cargo-target-dep", rev = 
 
 [workspace]
 members = [ 
+    "crates/appconfig",
     "crates/config",
     "crates/engine",
     "crates/http",

@@ -8117,9 +8117,9 @@ dependencies = [
 
 [[package]]
 name = "wit-bindgen-rust"
-version = "0.13.0"
+version = "0.13.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5695ff4e41873ed9ce56d2787e6b5772bdad9e70e2c1d2d160621d1762257f4f"
+checksum = "92a75f1427fe517d6476e95d5f1b90415273eac83b5a077fcce07920116959f0"
 dependencies = [
  "anyhow",
  "heck 0.4.1",

@@ -37,6 +37,17 @@
   "component": {
     "hello": {
       "source": "hello.wasm"
+    },
+    "needy1": {
+      "source": "needy1.wasm",
+      "imports": {
+        "x": {
+          "component": {
+            "source": "providey.wasm"
+          },
+          "export": "y"
+        }
+      }
     }
   }
 }

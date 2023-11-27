@@ -92,6 +92,16 @@ impl TryFrom<toml::Value> for ComponentSpec {
     }
 }
 
+/// Component import
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct ComponentImport {
+    /// `component = ...`
+    pub component: ComponentSpec,
+    /// `export = "x-y"` OR `export = "x:y/z"`
+    pub export: Option<String>,
+}
+
 /// Component definition
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -131,6 +141,9 @@ pub struct Component {
     /// Build configuration
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub build: Option<ComponentBuildConfig>,
+    /// Component imports
+    #[serde(default, skip_serializing_if = "Map::is_empty")]
+    pub imports: Map<String, ComponentImport>,
 }
 
 impl Component {

@@ -45,6 +45,7 @@ terminal = { path = "../terminal" }
 tokio = { version = "1.23", features = ["fs"] }
 toml = "0.5.9"
 url = "2"
+spin-compose = { path = "../compose" }
 spin-componentize = { workspace = true }
 tracing = { workspace = true }
 wasmtime = { workspace = true }

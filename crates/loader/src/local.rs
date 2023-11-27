@@ -7,7 +7,7 @@ use spin_common::paths::parent_dir;
 use spin_locked_app::{
     locked::{
         self, ContentPath, ContentRef, LockedApp, LockedComponent, LockedComponentSource,
-        LockedTrigger,
+        LockedTrigger, LockedComponentImport, LockedMap,
     },
     values::{ValuesMap, ValuesMapBuilder},
 };
@@ -175,6 +175,24 @@ impl LocalLoader {
             .map(|(k, v)| (k.into(), v))
             .collect();
 
+        let imports = component
+            .imports
+            .into_iter()
+            .fold(LockedMap::default(), |mut map, (name, import)| {
+                fn reference_id(spec: v2::ComponentSpec) -> String {
+                    let v2::ComponentSpec::Reference(id) = spec else {
+                        unreachable!("should have already been normalized");
+                    };
+                    id.as_ref().into()
+                }
+                let locked = LockedComponentImport {
+                    component: reference_id(import.component),
+                    export: import.export,
+                };
+                assert!(map.insert(name, locked).is_none());
+                map
+            });
+
         Ok(LockedComponent {
             id: id.as_ref().into(),
             metadata,
@@ -182,6 +200,7 @@ impl LocalLoader {
             env,
             files,
             config,
+            imports,
         })
     }
 

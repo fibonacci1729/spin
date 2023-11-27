@@ -8,6 +8,7 @@
 
 mod host_component;
 pub use spin_locked_app::locked;
+use spin_locked_app::locked::LockedComponentImport;
 pub use spin_locked_app::values;
 pub use spin_locked_app::{Error, MetadataKey, Result};
 
@@ -45,7 +46,7 @@ pub trait Loader {
     async fn load_component(
         &self,
         engine: &wasmtime::Engine,
-        source: &LockedComponentSource,
+        source: &AppComponent,
     ) -> anyhow::Result<spin_core::Component>;
 
     /// Called with a [`LockedComponentSource`] pointing to a Wasm module
@@ -144,26 +145,18 @@ impl OwnedApp {
     }
 }
 
-// Implementation detail of [`App::inert`]; "sealed" to prevent external impls.
-mod private {
-    pub trait MaybeLoader {}
-}
-use private::MaybeLoader;
-
-impl MaybeLoader for AppLoader {}
-
 /// An `App` holds loaded configuration for a Spin application.
 ///
 /// Note: The `L: MaybeLoader` param is an implementation detail to support the
 /// [`App::inert`] constructor.
 #[derive(Debug)]
-pub struct App<'a, L: MaybeLoader = AppLoader> {
+pub struct App<'a, L = AppLoader> {
     loader: &'a L,
     uri: String,
     locked: LockedApp,
 }
 
-impl<'a, L: MaybeLoader> App<'a, L> {
+impl<'a, L> App<'a, L> {
     /// Deserializes typed metadata for this app.
     ///
     /// Returns `Ok(None)` if there is no metadata for the given `key` and an
@@ -236,7 +229,6 @@ impl<'a> App<'a> {
 /// Used in the return type of [`App::inert`] to prevent the use of methods
 /// that require an [`AppLoader`].
 pub struct InertLoader;
-impl MaybeLoader for InertLoader {}
 
 impl App<'static, InertLoader> {
     /// Return an "inert" App which does not have an associated [`AppLoader`]
@@ -251,13 +243,13 @@ impl App<'static, InertLoader> {
 }
 
 /// An `AppComponent` holds configuration for a Spin application component.
-pub struct AppComponent<'a, L: MaybeLoader = AppLoader> {
+pub struct AppComponent<'a, L = AppLoader> {
     /// The app this component belongs to.
     pub app: &'a App<'a, L>,
     locked: &'a LockedComponent,
 }
 
-impl<'a, L: MaybeLoader> AppComponent<'a, L> {
+impl<'a, L> AppComponent<'a, L> {
     /// Returns this component's app-unique ID.
     pub fn id(&self) -> &str {
         &self.locked.id
@@ -298,6 +290,11 @@ impl<'a, L: MaybeLoader> AppComponent<'a, L> {
     pub fn config(&self) -> impl Iterator<Item = (&String, &String)> {
         self.locked.config.iter()
     }
+
+    /// Returns an iterator of component imports.
+    pub fn imports(&self) -> impl Iterator<Item = (&String, &LockedComponentImport)> {
+        self.locked.imports.iter()
+    } 
 }
 
 impl<'a> AppComponent<'a> {
@@ -309,7 +306,7 @@ impl<'a> AppComponent<'a> {
         self.app
             .loader
             .inner
-            .load_component(engine.as_ref(), &self.locked.source)
+            .load_component(engine.as_ref(), &self)
             .await
             .map_err(Error::LoaderError)
     }
@@ -352,13 +349,13 @@ impl<'a> AppComponent<'a> {
 }
 
 /// An `AppTrigger` holds configuration for a Spin application trigger.
-pub struct AppTrigger<'a, L: MaybeLoader = AppLoader> {
+pub struct AppTrigger<'a, L = AppLoader> {
     /// The app this trigger belongs to.
     pub app: &'a App<'a, L>,
     locked: &'a LockedTrigger,
 }
 
-impl<'a, L: MaybeLoader> AppTrigger<'a, L> {
+impl<'a, L> AppTrigger<'a, L> {
     /// Returns this trigger's app-unique ID.
     pub fn id(&self) -> &str {
         &self.locked.id

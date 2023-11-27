@@ -82,6 +82,18 @@ pub struct LockedComponent {
     /// Custom config values
     #[serde(default, skip_serializing_if = "LockedMap::is_empty")]
     pub config: LockedMap<String>,
+    /// Component imports
+    #[serde(default, skip_serializing_if = "LockedMap::is_empty")]
+    pub imports: LockedMap<LockedComponentImport>,
+}
+
+/// A LockedComponentImport specifies a component import.
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct LockedComponentImport {
+    /// Component id (e.g. "spin-fileserver")
+    pub component: String,
+    /// Option export id
+    pub export: Option<String>,
 }
 
 /// A LockedComponentSource specifies a Wasm source.

@@ -1,0 +1,16 @@
+[package]
+name = "spin-compose"
+version.workspace = true
+authors.workspace = true
+edition.workspace = true
+
+[dependencies]
+anyhow = "1.0"
+indexmap = "1"
+spin-app = { path = "../app" }
+spin-componentize = { workspace = true }
+spin-common = { path = "../common" }
+wasm-compose = { git = "https://github.com/fibonacci1729/wasm-tools", branch = "spin-compose" }
+wasmprinter = { git = "https://github.com/bytecodealliance/wasm-tools" }
+wasmparser = { git = "https://github.com/fibonacci1729/wasm-tools", branch = "spin-compose" }
+wasm-encoder = { git = "https://github.com/fibonacci1729/wasm-tools", branch = "spin-compose" }

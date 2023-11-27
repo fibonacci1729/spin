@@ -2,7 +2,7 @@
 
 use std::collections::HashSet;
 
-use crate::schema::v2::{AppManifest, ComponentSpec, KebabId};
+use crate::schema::v2::{AppManifest, ComponentSpec, KebabId, ComponentImport, Map};
 
 /// Normalizes some optional [`AppManifest`] features into a canonical form:
 /// - Inline components in trigger configs are moved into top-level
@@ -11,6 +11,52 @@ use crate::schema::v2::{AppManifest, ComponentSpec, KebabId};
 pub fn normalize_manifest(manifest: &mut AppManifest) {
     normalize_trigger_ids(manifest);
     normalize_inline_components(manifest);
+    normalize_component_imports(manifest);
+}
+
+fn normalize_component_imports(manifest: &mut AppManifest) {
+    let mut component_ids = manifest.components.keys().cloned().collect::<HashSet<_>>();
+
+    let mut normalized = Map::default();
+
+    for (component_id, component) in manifest.components.iter_mut() {
+        let mut counter = 1;
+
+        for import in component.imports.values_mut() {
+            if !matches!(import.component, ComponentSpec::Inline(_)) {
+                continue;
+            }
+            let inline_id = {
+                // Try a "natural" component ID...
+                let mut id = KebabId::try_from(format!("{component_id}-import"));
+                // ...falling back to a counter-based component ID
+                if id.is_err() || component_ids.contains(id.as_ref().unwrap()) {
+                    id = Ok(loop {
+                        let id = KebabId::try_from(format!("inline-component{counter}")).unwrap();
+                        if !component_ids.contains(&id) {
+                            break id;
+                        }
+                        counter += 1;
+                    });
+                }
+                id.unwrap()
+            };
+            // Replace the inline component with a reference...
+            let inline_spec = std::mem::replace(import, ComponentImport {
+                component: ComponentSpec::Reference(inline_id.clone()),
+                export: import.export.clone(),
+            });
+            let ComponentSpec::Inline(component) = inline_spec.component else {
+                unreachable!();
+            };
+            // ... reserve the generated component id to prevent collisions.
+            component_ids.insert(inline_id.clone());
+            // ...moving the inline component into the top-level components map.
+            normalized.insert(inline_id, *component);
+        } 
+    }
+    // ...moving the inlined components into the top-level components map.
+    manifest.components.extend(normalized);
 }
 
 fn normalize_inline_components(manifest: &mut AppManifest) {

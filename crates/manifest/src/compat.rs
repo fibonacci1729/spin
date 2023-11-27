@@ -84,6 +84,7 @@ pub fn v1_to_v2_app(manifest: v1::AppManifestV1) -> Result<v2::AppManifest, Erro
                 build: component.build,
                 allowed_outbound_hosts,
                 allowed_http_hosts: Vec::new(),
+                imports: Default::default(),
             },
         );
         triggers

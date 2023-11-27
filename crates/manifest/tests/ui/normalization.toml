@@ -20,3 +20,9 @@ components.inline2 = { source = "inline2.wasm" }
 
 [component.hello]
 source = "hello.wasm"
+
+[component.needy1]
+source = "needy1.wasm"
+[component.needy1.imports."x"]
+component = { source = "providey.wasm" }
+export = "y"

@@ -9,7 +9,7 @@ use spin_app::{
     AppComponent, Loader,
 };
 use spin_core::StoreBuilder;
-use tokio::fs;
+// use tokio::fs;
 
 use spin_common::url::parse_file_url;
 
@@ -41,22 +41,20 @@ impl Loader for TriggerLoader {
     async fn load_component(
         &self,
         engine: &spin_core::wasmtime::Engine,
-        source: &LockedComponentSource,
+        component: &AppComponent,
     ) -> Result<spin_core::Component> {
-        let source = source
+        let source = component
+            .source()
             .content
             .source
             .as_ref()
             .context("LockedComponentSource missing source field")?;
         let path = parse_file_url(source)?;
-        let bytes = fs::read(&path).await.with_context(|| {
-            format!(
-                "failed to read component source from disk at path '{}'",
-                path.display()
-            )
-        })?;
-        let component = spin_componentize::componentize_if_necessary(&bytes)?;
-        spin_core::Component::new(engine, component.as_ref())
+
+        let component = spin_compose::compose(component)
+            .with_context(|| format!("composing component {:?}", component.id()))?;
+
+        spin_core::Component::new(engine, component)
             .with_context(|| format!("loading module {path:?}"))
     }
 

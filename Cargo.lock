@@ -8225,6 +8225,7 @@ dependencies = [
  "anyhow",
  "async-compression",
  "async-tar",
+ "async-trait",
  "base64 0.22.1",
  "chrono",
  "dirs 5.0.1",
@@ -8237,6 +8238,8 @@ dependencies = [
  "serde",
  "serde_json",
  "spin-common",
+ "spin-componentize",
+ "spin-compose",
  "spin-loader",
  "spin-locked-app",
  "tempfile",
@@ -8244,6 +8247,9 @@ dependencies = [
  "tokio-util",
  "tracing",
  "walkdir",
+ "wasm-encoder 0.217.0",
+ "wit-component 0.217.0",
+ "wit-parser 0.217.0",
 ]
 
 [[package]]
@@ -11112,6 +11118,7 @@ dependencies = [
  "wasm-encoder 0.217.0",
  "wasm-metadata 0.217.0",
  "wasmparser 0.217.0",
+ "wat",
  "wit-parser 0.217.0",
 ]
 

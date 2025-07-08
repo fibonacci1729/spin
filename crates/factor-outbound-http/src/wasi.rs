@@ -49,7 +49,10 @@ where
     wasmtime_wasi_http::bindings::http::outgoing_handler::add_to_linker::<_, HasHttp>(
         linker, get_http,
     )?;
-    wasmtime_wasi_http::bindings::http::types::add_to_linker::<_, HasHttp>(linker, get_http)?;
+    let link_opts = wasmtime_wasi_http::bindings::http::types::LinkOptions::default();
+    wasmtime_wasi_http::bindings::http::types::add_to_linker::<_, HasHttp>(
+        linker, &link_opts, get_http,
+    )?;
 
     wasi_2023_10_18::add_to_linker(linker, get_http)?;
     wasi_2023_11_10::add_to_linker(linker, get_http)?;
